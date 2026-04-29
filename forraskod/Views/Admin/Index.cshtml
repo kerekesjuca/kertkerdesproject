@@ -1,0 +1,271 @@
+﻿@model KertKerdes.Models.AdminViewModel
+
+@{
+    ViewData["Title"] = "Moderátori felület";
+}
+
+<div class="admin-dashboard">
+
+    <div class="admin-header">
+        <h2><i class="bi bi-shield-check"></i> Moderátori felület</h2>
+
+        <p class="text-muted">
+            Beküldött kérdések, válaszok és moderátori kérelmek kezelése
+        </p>
+    </div>
+
+    <div class="row mb-4">
+
+        <div class="col-md-4">
+            <div class="admin-card text-center">
+                <h3>@Model.VarakozoKerdesek.Count</h3>
+                <p>Várakozó kérdés</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="admin-card text-center">
+                <h3>@Model.VarakozoValaszok.Count</h3>
+                <p>Várakozó válasz</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="admin-card text-center">
+                <h3>@Model.VarakozoModeratorok.Count</h3>
+                <p>Moderátori kérelem</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="accordion" id="adminAccordion">
+
+        <div class="accordion-item">
+
+            <h2 class="accordion-header">
+                <button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#moderatorok">
+                    <i class="bi bi-person-check me-2"></i> Moderátori kérelmek
+                </button>
+            </h2>
+
+            <div id="moderatorok" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+
+                    @if (Model.VarakozoModeratorok.Any())
+                    {
+                        @foreach (var felhasznalo in Model.VarakozoModeratorok)
+                        {
+                            <div class="admin-answer-card">
+
+                                <div class="admin-answer-body">
+
+                                    <div class="admin-answer-text">
+                                        <strong>@felhasznalo.Felhasznalonev</strong>
+                                    </div>
+
+                                    <div class="admin-answer-meta">
+
+                                        <span class="status-badge status-approved">
+                                            Moderátor kérés
+                                        </span>
+
+                                        <div class="admin-answer-question">
+                                            @felhasznalo.Email
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="admin-actions">
+
+                                    @if (!felhasznalo.ModeratorJovahagyva && !felhasznalo.ModeratorElutasitva)
+                                    {
+                                        <form method="post" action="/Admin/ModeratorJovahagy/@felhasznalo.Id">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="admin-action-btn admin-approve border-0">
+                                                Jóváhagyás
+                                            </button>
+                                        </form>
+
+                                        <form method="post" action="/Admin/ModeratorElutasit/@felhasznalo.Id">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="admin-action-btn admin-delete border-0">
+                                                Elutasítás
+                                            </button>
+                                        </form>
+                                    }
+
+                                </div>
+
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="admin-empty">
+                            Nincs függő moderátori kérelem.
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="accordion-item">
+
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#kerdesek">
+                    <i class="bi bi-chat-left-text me-2"></i> Kérdések
+                </button>
+            </h2>
+
+            <div id="kerdesek" class="accordion-collapse collapse">
+                <div class="accordion-body">
+
+                    @if (Model.VarakozoKerdesek.Any())
+                    {
+                        @foreach (var kerdes in Model.VarakozoKerdesek)
+                        {
+                            <div class="admin-row">
+
+                                <div>
+                                    <strong>@kerdes.Cim</strong><br />
+                                    <small>@kerdes.Leiras</small><br />
+
+                                    <span class="status-badge status-waiting">
+                                        Jóváhagyásra vár
+                                    </span>
+
+                                    @if (kerdes.Felhasznalo != null)
+                                    {
+                                        <br />
+                                        <small class="text-muted">
+                                            @kerdes.Felhasznalo.Felhasznalonev · @kerdes.Datum.ToShortDateString()
+                                        </small>
+                                    }
+                                </div>
+
+                                <div class="admin-actions">
+
+                                    <a href="/Kerdes/Reszletek/@kerdes.Id"
+                                       class="admin-action-btn">
+                                        Megtekintés
+                                    </a>
+
+                                    <form method="post" action="/Admin/KerdesJovahagy/@kerdes.Id">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="admin-action-btn admin-approve border-0">
+                                            Jóváhagyás
+                                        </button>
+                                    </form>
+
+                                    <form method="post" action="/Admin/KerdesTorles/@kerdes.Id">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="admin-action-btn admin-delete border-0">
+                                            Törlés
+                                        </button>
+                                    </form>
+
+                                </div>
+
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="admin-empty">
+                            Nincs várakozó kérdés.
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="accordion-item">
+
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#valaszok">
+                    <i class="bi bi-reply me-2"></i> Válaszok
+                </button>
+            </h2>
+
+            <div id="valaszok" class="accordion-collapse collapse">
+                <div class="accordion-body">
+
+                    @if (Model.VarakozoValaszok.Any())
+                    {
+                        @foreach (var valasz in Model.VarakozoValaszok)
+                        {
+                            <div class="admin-answer-card">
+
+                                <div class="admin-answer-body">
+
+                                    <div class="admin-answer-text">
+                                        @valasz.Szoveg
+                                    </div>
+
+                                    <div class="admin-answer-meta">
+
+                                        <span class="status-badge status-waiting">
+                                            Jóváhagyásra vár
+                                        </span>
+
+                                        @if (valasz.Kerdes != null)
+                                        {
+                                            <div class="admin-answer-question">
+                                                Kérdés: @valasz.Kerdes.Cim
+                                            </div>
+                                        }
+
+                                        @if (valasz.Felhasznalo != null)
+                                        {
+                                            <div>
+                                                @valasz.Felhasznalo.Felhasznalonev · @valasz.Datum.ToShortDateString()
+                                            </div>
+                                        }
+
+                                    </div>
+
+                                </div>
+
+                                <div class="admin-actions">
+
+                                    <form method="post" action="/Admin/ValaszJovahagy/@valasz.Id">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="admin-action-btn admin-approve border-0">
+                                            Jóváhagyás
+                                        </button>
+                                    </form>
+
+                                    <form method="post" action="/Admin/ValaszTorles/@valasz.Id">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="admin-action-btn admin-delete border-0">
+                                            Törlés
+                                        </button>
+                                    </form>
+
+                                </div>
+
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="admin-empty">
+                            Nincs várakozó válasz.
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

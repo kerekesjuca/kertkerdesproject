@@ -1,0 +1,165 @@
+﻿@using Microsoft.AspNetCore.Http
+
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - KertKerdes</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet" href="~/css/kerdes.css" />
+
+    <link rel="stylesheet" href="~/css/admin.css" />
+
+</head>
+
+<body>
+
+    <header class="main-header">
+
+        <div class="container d-flex justify-content-between align-items-center py-3">
+
+            <a asp-controller="Kerdes"
+               asp-action="Index"
+               class="logo-box text-decoration-none">
+
+                <div class="logo-icon">
+                    <i class="bi bi-flower1"></i>
+                </div>
+
+                <span>Kertészeti Közösség</span>
+
+            </a>
+
+            <div class="d-flex gap-3 align-items-center">
+
+                @if (Context.Session.GetString("Szerepkor") == "Admin"
+                                || Context.Session.GetString("Szerepkor") == "Moderator")
+                {
+                    <a asp-controller="Admin"
+                       asp-action="Index"
+                       class="nav-modern-btn">
+
+                        <i class="bi bi-shield"></i>
+                        Moderálás
+
+                    </a>
+                }
+
+                @if (Context.Session.GetString("FelhasznaloNev") == null)
+                {
+                    <a asp-controller="Fiok"
+                       asp-action="Bejelentkezes"
+                       class="nav-modern-btn">
+
+                        Bejelentkezés
+
+                    </a>
+
+                    <a asp-controller="Fiok"
+                       asp-action="Regisztracio"
+                       class="nav-modern-btn">
+
+                        Regisztráció
+
+                    </a>
+                }
+                else
+                {
+                    <div class="user-badge">
+
+                        <i class="bi bi-person"></i>
+                        @Context.Session.GetString("FelhasznaloNev")
+
+                    </div>
+
+                    <a asp-controller="Fiok"
+                       asp-action="Kijelentkezes"
+                       class="nav-modern-btn">
+
+                        Kijelentkezés
+
+                    </a>
+                }
+
+            </div>
+
+        </div>
+
+    </header>
+
+    <main class="container mt-4">
+
+        @RenderBody()
+
+    </main>
+
+    <footer class="footer-modern mt-5">
+
+        <div class="container text-center">
+
+            © 2026 Kertészeti Közösség
+
+        </div>
+
+    </footer>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    @if (TempData["AdminSiker"] != null || TempData["AdminHiba"] != null || TempData["SzavazatSiker"] != null || TempData["SzavazatHiba"] != null)
+    {
+        var uzenet = TempData["AdminSiker"]
+        ?? TempData["AdminHiba"]
+        ?? TempData["SzavazatSiker"]
+        ?? TempData["SzavazatHiba"];
+
+        var sikeres = TempData["AdminSiker"] != null || TempData["SzavazatSiker"] != null;
+
+        <div id="globalModal"
+             class="modal fade show"
+             style="display:block; background:rgba(0,0,0,0.45);"
+             tabindex="-1">
+
+            <div class="modal-dialog modal-dialog-centered">
+
+                <div class="modal-content border-0 rounded-4 shadow">
+
+                    <div class="modal-body text-center p-4">
+
+                        <div class="mb-3 fs-1 @(sikeres ? "text-success" : "text-warning")">
+                            <i class="bi @(sikeres ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill")"></i>
+                        </div>
+
+                        <h4>@uzenet</h4>
+
+                        <div class="mt-4">
+                            <button type="button"
+                                    class="btn btn-success rounded-pill px-4"
+                                    onclick="document.getElementById('globalModal').style.display='none';">
+                                Rendben
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>
